@@ -1,0 +1,90 @@
+import sqlite3
+
+def create_tables():
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS пользователи (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                имя TEXT,
+                фамилия TEXT,
+                email TEXT
+                )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS книги (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                название TEXT,
+                автор TEXT,
+                год INTEGER,
+                экземпляры INTEGER
+                )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS выдачи (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                пользователь_id INTEGER,
+                книга_id INTEGER,
+                дата_выдачи TEXT,
+                дата_возврата TEXT,
+                FOREIGN KEY(пользователь_id) REFERENCES пользователи(id),
+                FOREIGN KEY(книга_id) REFERENCES книги(id)
+                )''')
+    conn.commit()
+    conn.close()
+
+def регистрация_пользователя(имя, фамилия, email):
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO пользователи (имя, фамилия, email) VALUES (?, ?, ?)", (имя, фамилия, email))
+    conn.commit()
+    conn.close()
+
+def добавление_книги(название, автор, год, экземпляры):
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO книги (название, автор, год, экземпляры) VALUES (?, ?, ?, ?)", (название, автор, год, экземпляры))
+    conn.commit()
+    conn.close()
+
+def выдача_книги(пользователь_id, книга_id, дата_выдачи, дата_возврата):
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+    print(f"Выдача книги пользователем с ID: {пользователь_id}, книга ID: {книга_id}")
+    c.execute("INSERT INTO выдачи (пользователь_id, книга_id, дата_выдачи, дата_возврата) VALUES (?, ?, ?, ?)",
+              (пользователь_id, книга_id, дата_выдачи, дата_возврата))
+    c.execute("UPDATE книги SET экземпляры = экземпляры - 1 WHERE id = ?", (книга_id,))
+    conn.commit()
+    conn.close()
+
+def возврат_книги(выдача_id):
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+    c.execute("SELECT книга_id FROM выдачи WHERE id = ?", (выдача_id,))
+    книга_id = c.fetchone()[0]
+    c.execute("DELETE FROM выдачи WHERE id = ?", (выдача_id,))
+    c.execute("UPDATE книги SET экземпляры = экземпляры + 1 WHERE id = ?", (книга_id,))
+    conn.commit()
+    conn.close()
+
+def просмотр_книг():
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM книги")
+    книги = c.fetchall()
+    conn.close()
+    return книги
+
+def просмотр_выдач():
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM выдачи")
+    выдачи = c.fetchall()
+    conn.close()
+    return выдачи
+
+if __name__ == "__main__":
+    create_tables()
+    регистрация_пользователя("Мурад", "Мирзазаде", "murad.mirzazada@gmail.com")
+    добавление_книги("Война и мир", "Лев Толстой", 1869, 3)
+    print("Книги после добавления:", просмотр_книг())
+    выдача_книги(1, 1, "2025-03-06", "2025-03-20")
+    print("История выдачи после выдачи книги:", просмотр_выдач())
+    возврат_книги(1)
+    print("Книги после возврата:", просмотр_книг())
+    print("История выдачи после возврата книги:", просмотр_выдач())
