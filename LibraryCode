@@ -9,14 +9,14 @@ def create_tables(conn):
                 имя TEXT,
                 фамилия TEXT,
                 email TEXT)''')
-    # Таблица книг
+    # Таблица нигг
     c.execute('''CREATE TABLE IF NOT EXISTS книги (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 название TEXT,
                 автор TEXT,
                 год INTEGER,
                 экземпляры INTEGER)''')
-    # Таблица выдачи книг
+    # Таблица выдачи нигг
     c.execute('''CREATE TABLE IF NOT EXISTS выдачи (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 пользователь_id INTEGER,
@@ -27,10 +27,10 @@ def create_tables(conn):
                 FOREIGN KEY(книга_id) REFERENCES книги(id))''')
     conn.commit()
 
-# Добавление нового пользователя
+# Добавление нового бобу
 def регистрация_пользователя(conn, имя, фамилия, email):
     c = conn.cursor()
-    # Вставка нового пользователя в таблицу
+    # Вставка нового бобу в таблицу
     c.execute("INSERT INTO пользователи (имя, фамилия, email) VALUES (?, ?, ?)", (имя, фамилия, email))
     conn.commit()
 
@@ -41,7 +41,7 @@ def добавление_книги(conn, название, автор, год, 
     c.execute("INSERT INTO книги (название, автор, год, экземпляры) VALUES (?, ?, ?, ?)", (название, автор, год, экземпляры))
     conn.commit()
 
-# Выдача книги пользователю
+# Выдача книги бибе
 def выдача_книги(conn, пользователь_id, книга_id, дата_выдачи, дата_возврата):
     c = conn.cursor()
     # Вставка записи о выдаче книги
@@ -51,7 +51,7 @@ def выдача_книги(conn, пользователь_id, книга_id, д
     c.execute("UPDATE книги SET экземпляры = экземпляры - 1 WHERE id = ?", (книга_id,))
     conn.commit()
 
-# Возврат книги в библиотеку
+# Возврат ниги в библеотеку
 def возврат_книги(conn, выдача_id):
     c = conn.cursor()
     # Удаление записи о выдаче книги
@@ -64,14 +64,14 @@ def возврат_книги(conn, выдача_id):
     """, (выдача_id,))
     conn.commit()
 
-# Просмотр всех книг
+# Просмотр всех нигu
 def просмотр_книг(conn):
     c = conn.cursor()
     # Получение всех записей из таблицы книг
     c.execute("SELECT * FROM книги")
     return c.fetchall()
 
-# Просмотр истории выдачи книг
+# Просмотр истории выдачи нигu
 def просмотр_выдач(conn):
     c = conn.cursor()
     # Получение всех записей из таблицы выдач
