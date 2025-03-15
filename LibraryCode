@@ -1,110 +1,72 @@
 import sqlite3
 
-# Тут мы делаем таблицы если их ещё нет
-def create_tables():
-    conn = sqlite3.connect('library.db')  # Подключаемся к базе данных, как в игре "вход в подземелье"
-    c = conn.cursor()  # Это наш маг, который творит волшебство с базой
-    # Делаем таблицу с людьми которые любят книги
+def create_tables(conn):
+    c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS пользователи (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,  # Это типа идентификатор. Он уникальный
-                имя TEXT,  # Имя человека, например "Мурад"
-                фамилия TEXT,  # Фамилия, например "Мирзазаде"
-                email TEXT  # Электронная почта, чтобы знать, куда писать
-                )''')
-    # Делаем таблицу с книгами как полки в библиотеке
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                имя TEXT,
+                фамилия TEXT,
+                email TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS книги (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,  # Уникальный номер книги
-                название TEXT,  # Название книги например "Гарри Поттер"
-                автор TEXT,  # Автор книги, типа "Джоан Роулинг"
-                год INTEGER,  # Год, когда книга вышла
-                экземпляры INTEGER  # Сколько штук этой книги у нас есть
-                )''')
-    # Делаем таблицу чтобы знать кто что взял и когда вернёт
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                название TEXT,
+                автор TEXT,
+                год INTEGER,
+                экземпляры INTEGER)''')
     c.execute('''CREATE TABLE IF NOT EXISTS выдачи (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,  # Уникальный номер записи о выдаче
-                пользователь_id INTEGER,  # Человек который взял книгу
-                книга_id INTEGER,  # Какая именно книга была взята
-                дата_выдачи TEXT,  # Когда взяли книгу
-                дата_возврата TEXT,  # Когда должны вернуть
-                FOREIGN KEY(пользователь_id) REFERENCES пользователи(id),  # Ссылаемся на таблицу людей
-                FOREIGN KEY(книга_id) REFERENCES книги(id)  # Ссылаемся на таблицу книг
-                )''')
-    conn.commit()  # Сохраняем всё чтобы не потерялось
-    conn.close()  # Закрываем базу как дверь библиотеки
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                пользователь_id INTEGER,
+                книга_id INTEGER,
+                дата_выдачи TEXT,
+                дата_возврата TEXT,
+                FOREIGN KEY(пользователь_id) REFERENCES пользователи(id),
+                FOREIGN KEY(книга_id) REFERENCES книги(id))''')
+    conn.commit()
 
-# Добавляем нового человека в список читателей
-def регистрация_пользователя(имя, фамилия, email):
-    conn = sqlite3.connect('library.db')  # Подключаемся к библиотеке
+def регистрация_пользователя(conn, имя, фамилия, email):
     c = conn.cursor()
-    # Говорим: "Эй барыга добавь нового человека в таблицу!"
     c.execute("INSERT INTO пользователи (имя, фамилия, email) VALUES (?, ?, ?)", (имя, фамилия, email))
-    conn.commit()  # Сохраняем изменения
-    conn.close()  # Выходим из базы
+    conn.commit()
 
-# Добавляем книжку в библиотеку
-def добавление_книги(название, автор, год, экземпляры):
-    conn = sqlite3.connect('library.db')
+def добавление_книги(conn, название, автор, год, экземпляры):
     c = conn.cursor()
-    # Говорим: "Добавь книжку под названием вот таким!"
     c.execute("INSERT INTO книги (название, автор, год, экземпляры) VALUES (?, ?, ?, ?)", (название, автор, год, экземпляры))
     conn.commit()
-    conn.close()
 
-# Когда ктото берёт книгу
-def выдача_книги(пользователь_id, книга_id, дата_выдачи, дата_возврата):
-    conn = sqlite3.connect('library.db')
+def выдача_книги(conn, пользователь_id, книга_id, дата_выдачи, дата_возврата):
     c = conn.cursor()
-    print(f"Кто-то взял книгу наш слоник! ID человека: {пользователь_id}, ID книги: {книга_id}")
-    # Записываем что книгу взяли
     c.execute("INSERT INTO выдачи (пользователь_id, книга_id, дата_выдачи, дата_возврата) VALUES (?, ?, ?, ?)",
               (пользователь_id, книга_id, дата_выдачи, дата_возврата))
-    # Уменьшаем количество экземпляров на 1 потому что книгу взяли
     c.execute("UPDATE книги SET экземпляры = экземпляры - 1 WHERE id = ?", (книга_id,))
     conn.commit()
-    conn.close()
 
-# Когда книгу возвращают
-def возврат_книги(выдача_id):
-    conn = sqlite3.connect('library.db')
+def возврат_книги(conn, выдача_id):
     c = conn.cursor()
-    # Смотрим какую книгу возвращают
     c.execute("SELECT книга_id FROM выдачи WHERE id = ?", (выдача_id,))
     книга_id = c.fetchone()[0]
-    # Удаляем запись о том что книга была взята
     c.execute("DELETE FROM выдачи WHERE id = ?", (выдача_id,))
-    # Возвращаем экзмпляр книги обратно
     c.execute("UPDATE книги SET экземпляры = экземпляры + 1 WHERE id = ?", (книга_id,))
     conn.commit()
-    conn.close()
 
-# Показываем все книги которые есть
-def просмотр_книг():
-    conn = sqlite3.connect('library.db')
+def просмотр_книг(conn):
     c = conn.cursor()
-    # Берём все данные из таблицы с книгами
     c.execute("SELECT * FROM книги")
-    книги = c.fetchall()
-    conn.close()
-    return книги
+    return c.fetchall()
 
-# Показываем историю выдачи книг
-def просмотр_выдач():
-    conn = sqlite3.connect('library.db')
+def просмотр_выдач(conn):
     c = conn.cursor()
-    # Берём все данные из таблицы с выдачами
     c.execute("SELECT * FROM выдачи")
-    выдачи = c.fetchall()
-    conn.close()
-    return выдачи
+    return c.fetchall()
 
-# СИУУУУУУУУУУУУУУУУУ
 if __name__ == "__main__":
-    create_tables()  # Делаем таблицы как стартовый квест
-    регистрация_пользователя("Мурад", "Мирзазаде", "murad.mirzazada@gmail.com")
-    добавление_книги("Keka", "Лев Худой", 6952, 3)
-    print("Книги после добавления:", просмотр_книг())
-    выдача_книги(1, 1, "2025-03-06", "2025-03-20")
-    print("История выдачи после выдачи книги:", просмотр_выдач())
-    возврат_книги(1)
-    print("Книги после возврата:", просмотр_книг())
-    print("История выдачи после возврата книги:", просмотр_выдач())
+    conn = sqlite3.connect('library.db')
+    create_tables(conn)
+    регистрация_пользователя(conn, "Мурад", "Мирзазаде", "murad.mirzazada@gmail.com")
+    добавление_книги(conn, "Keka", "Лев Худой", 6952, 3)
+    print("Книги после добавления:", просмотр_книг(conn))
+    выдача_книги(conn, 1, 1, "2025-03-06", "2025-03-20")
+    print("История выдачи после выдачи книги:", просмотр_выдач(conn))
+    возврат_книги(conn, 1)
+    print("Книги после возврата:", просмотр_книг(conn))
+    print("История выдачи после возврата книги:", просмотр_выдач(conn))
+    conn.close()
