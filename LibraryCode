@@ -3,20 +3,20 @@ import sqlite3
 # Создание таблиц если они еще не существуют
 def create_tables(conn):
     c = conn.cursor()
-    # Таблица пользователей
+    # Таблица Нефров
     c.execute('''CREATE TABLE IF NOT EXISTS пользователи (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 имя TEXT,
                 фамилия TEXT,
                 email TEXT)''')
-    # Таблица книг
+    # Таблица ниг
     c.execute('''CREATE TABLE IF NOT EXISTS книги (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 название TEXT,
                 автор TEXT,
                 год INTEGER,
                 экземпляры INTEGER)''')
-    # Таблица выдач книг
+    # Таблица выдачы ниг
     c.execute('''CREATE TABLE IF NOT EXISTS выдачи (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 пользователь_id INTEGER,
@@ -27,21 +27,21 @@ def create_tables(conn):
                 FOREIGN KEY(книга_id) REFERENCES книги(id))''')
     conn.commit()
 
-# Добавление нового человека
+# Добавление нового баба любы
 def регистрация_пользователя(conn, имя, фамилия, email):
     c = conn.cursor()
     # Вставка нового пользователя в таблицу
     c.execute("INSERT INTO пользователи (имя, фамилия, email) VALUES (?, ?, ?)", (имя, фамилия, email))
     conn.commit()
 
-# Добавление новой книги в библиотеку
+# Добавление новой нигги в библиотеку
 def добавление_книги(conn, название, автор, год, экземпляры):
     c = conn.cursor()
     # Вставка новой книги в таблицу
     c.execute("INSERT INTO книги (название, автор, год, экземпляры) VALUES (?, ?, ?, ?)", (название, автор, год, экземпляры))
     conn.commit()
 
-# Выдача книги человеку
+# Выдача нигги кришу
 def выдача_книги(conn, пользователь_id, книга_id, дата_выдачи, дата_возврата):
     c = conn.cursor()
     # Вставка записи о выдаче книги
@@ -51,7 +51,7 @@ def выдача_книги(conn, пользователь_id, книга_id, д
     c.execute("UPDATE книги SET экземпляры = экземпляры - 1 WHERE id = ?", (книга_id,))
     conn.commit()
 
-# Возврат книги в библиотеку
+# Возврат нигги в бибибибибибибиббибиотекууууу
 def возврат_книги(conn, выдача_id):
     c = conn.cursor()
     # Получение ID книги, которую возвращают
@@ -63,21 +63,21 @@ def возврат_книги(conn, выдача_id):
     c.execute("UPDATE книги SET экземпляры = экземпляры + 1 WHERE id = ?", (книга_id,))
     conn.commit()
 
-# Просмотр всех книг в библиотеке
+# Просмотр всех нигги в бибаибобалетаке
 def просмотр_книг(conn):
     c = conn.cursor()
-    # Получение всех записей из таблицы книг
+    # Получение всех запесий из таблицы нигги
     c.execute("SELECT * FROM книги")
     return c.fetchall()
 
-# Просмотр истории выдачи книг
+# Просмотр истории выдачи нигги
 def просмотр_выдач(conn):
     c = conn.cursor()
     # Получение всех записей из таблицы выдач
     c.execute("SELECT * FROM выдачи")
     return c.fetchall()
 
-# Вызов кода
+# Вызоваю кодик который получит 12 баллов 100 процентов
 if __name__ == "__main__":
     conn = sqlite3.connect('library.db')  # Подключение к базе данных
     create_tables(conn)  # Создание таблиц
