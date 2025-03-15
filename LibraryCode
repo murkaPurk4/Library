@@ -80,7 +80,7 @@ def просмотр_выдач(conn):
 
 # Вызов кода
 if __name__ == "__main__":
-    conn = sqlite3.connect('library.db')  # Подключение к базе данных
+    conn = sqlite3.connect('library.db')  # Подключение к базе данных пентагона
     create_tables(conn)  # Создание таблиц
     регистрация_пользователя(conn, "Мурад", "Мирзазаде", "murad.mirzazada@gmail.com")
     добавление_книги(conn, "Keka", "Лев Худой", 6952, 3)
